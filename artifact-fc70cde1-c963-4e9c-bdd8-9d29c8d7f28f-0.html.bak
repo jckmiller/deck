@@ -74,7 +74,7 @@
     <span class="num">01 / 14</span>
     <div class="kicker">Technology Briefing</div>
     <h1>Running LLMs In-House</h1>
-    <p class="sub">Why we're running models in-house, how they work, the tooling landscape, and a path to our own agent.</p>
+    <p class="sub">Cloud vs. local models, how they run, the tooling landscape, and a path to our own agent.</p>
     <div class="badge">Prepared for leadership review &nbsp;•&nbsp; Technical overview</div>
     <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
   </section>
@@ -84,7 +84,7 @@
     <div class="kicker">Agenda</div>
     <h2>What this briefing covers</h2>
     <div class="grid g2" style="margin-top:26px">
-      <div class="card"><h3>1 · The decision</h3><p>Why we're choosing local — the privacy, security, and control case for running LLMs in-house.</p></div>
+      <div class="card"><h3>1 · The choice</h3><p>Enterprise cloud LLMs vs. locally-hosted models — trade-offs on cost, privacy, and control.</p></div>
       <div class="card"><h3>2 · The engine</h3><p>How local models actually run: <span class="k">llama.cpp</span>, GGUF, and quantization.</p></div>
       <div class="card"><h3>3 · The wrappers</h3><p>Ollama, LM Studio, and Unsloth — runtime and fine-tuning.</p></div>
       <div class="card"><h3>4 · Context &amp; interaction</h3><p>RAG, files, filesystem — plus OpenClaw &amp; Hermes as agent front-ends.</p></div>
@@ -94,32 +94,29 @@
 
   <section class="slide">
     <span class="num">03 / 14</span>
-    <div class="kicker">Our Decision</div>
-    <h2>Why we're going local</h2>
-    <p class="lead" style="margin-top:4px">Cloud LLMs are powerful, but they aren't the right fit for how we work and what we protect. Running open-weight models in-house keeps privacy, security, and control in our own hands.</p>
-    <div class="grid g3" style="margin-top:22px">
-      <div class="card"><h3>🔒 Privacy</h3>
-        <ul><li>Data never leaves our hardware</li><li>Prompts, documents, and outputs stay inside our perimeter</li><li>No third party retains, reviews, or trains on our inputs</li></ul></div>
-      <div class="card"><h3>🛡️ Security</h3>
-        <ul><li>Air-gap capable — runs fully offline, isolated from the internet</li><li>Compliance is native, not merely contractually promised</li><li>We control access, logging, and every network boundary</li></ul></div>
-      <div class="card"><h3>🎛️ Control</h3>
-        <ul><li>We choose models, versions, and upgrade timing</li><li>No surprise deprecation, pricing shifts, or rate limits</li><li>Full freedom to fine-tune, extend, and audit the stack</li></ul></div>
+    <div class="kicker">The Core Decision</div>
+    <h2>Enterprise cloud LLM vs. local LLM</h2>
+    <div class="split">
+      <div class="cloud"><h3>☁️ Cloud (OpenAI, Anthropic, Azure)</h3>
+        <ul><li>Frontier quality, zero infrastructure to manage</li><li>Pay per token — scales with usage, no capex</li><li>Data leaves our perimeter (governed by contract/DPA)</li><li>Provider controls model, pricing, deprecation</li><li>Network dependency &amp; per-call latency</li></ul></div>
+      <div class="local"><h3>🖥️ Local (self-hosted, open weights)</h3>
+        <ul><li>Data never leaves our hardware — privacy by design</li><li>Fixed cost after hardware; unlimited inference</li><li>Full control: model choice, versioning, fine-tuning</li><li>Works offline / air-gapped; no rate limits</li><li>We own ops, GPUs, and quality ceiling</li></ul></div>
     </div>
     <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
   </section>
 
   <section class="slide">
     <span class="num">04 / 14</span>
-    <div class="kicker">Our Requirements</div>
-    <h2>How local fits what we need</h2>
+    <div class="kicker">Decision Matrix</div>
+    <h2>Where each option wins</h2>
     <table>
-      <tr><th>What we need</th><th>How local delivers</th></tr>
-      <tr><td>Keep sensitive data in-house</td><td class="on">Privacy by design — nothing ever leaves our hardware</td></tr>
-      <tr><td>Run in secure / air-gapped environments</td><td class="on">Works fully offline, no external calls</td></tr>
-      <tr><td>Stay in control of the model &amp; roadmap</td><td class="on">We pick versions and decide when to change</td></tr>
-      <tr><td>Predictable cost at scale</td><td class="on">Fixed after hardware — no per-token billing</td></tr>
-      <tr><td>Customize &amp; fine-tune on our own data</td><td class="on">Full freedom to retrain and adapt</td></tr>
-      <tr><td>Meet compliance natively</td><td class="on">Built into the setup, not contractually promised</td></tr>
+      <tr><th>Dimension</th><th>Enterprise Cloud</th><th>Local / Self-hosted</th></tr>
+      <tr><td>Data residency &amp; privacy</td><td class="off">Leaves perimeter</td><td class="on">Stays in-house</td></tr>
+      <tr><td>Peak model quality</td><td class="on">Frontier</td><td>Strong &amp; closing fast</td></tr>
+      <tr><td>Cost at high volume</td><td class="off">Per-token, grows</td><td class="on">Flat after hardware</td></tr>
+      <tr><td>Setup &amp; maintenance</td><td class="on">Minimal</td><td class="off">We run the ops</td></tr>
+      <tr><td>Customization / fine-tune</td><td>Limited</td><td class="on">Full control</td></tr>
+      <tr><td>Compliance / air-gap</td><td>Contractual</td><td class="on">Native</td></tr>
     </table>
     <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
   </section>
