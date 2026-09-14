@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Local vs. Cloud LLMs — Briefing</title>
+<style>
+  :root{
+    --ink:#1a2332; --ink-soft:#4a5568; --muted:#718096;
+    --line:#e2e8f0; --bg:#f7f9fc; --card:#ffffff;
+    --accent:#1c3d5a; --accent2:#2c7a7b; --gold:#b7924a;
+    --chip:#eef2f7; --shadow:0 10px 40px rgba(26,35,50,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  .deck{max-width:1120px;margin:0 auto;padding:48px 24px 96px}
+  .slide{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:56px 64px;margin-bottom:40px;min-height:560px;display:flex;flex-direction:column;overflow:hidden}
+  .kicker{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent2);font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:12px}
+  .kicker::before{content:"";width:32px;height:2px;background:var(--gold)}
+  h1{font-size:44px;line-height:1.1;letter-spacing:-.02em;font-weight:700}
+  h2{font-size:32px;line-height:1.15;letter-spacing:-.01em;font-weight:700;margin-bottom:10px}
+  .sub{color:var(--ink-soft);font-size:18px;margin-top:16px;max-width:70ch;line-height:1.5}
+  p{color:var(--ink-soft);line-height:1.55;font-size:16px}
+  .num{position:absolute;top:28px;right:36px;font-size:13px;color:var(--muted);letter-spacing:.1em;font-weight:600}
+  .footer{position:absolute;bottom:22px;left:64px;right:64px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;border-top:1px solid var(--line);padding-top:12px}
+  .grid{display:grid;gap:20px;margin-top:8px}
+  .g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:22px 24px}
+  .card h3{font-size:18px;color:var(--ink);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .card p{font-size:14.5px}
+  ul{list-style:none;margin-top:6px}
+  li{position:relative;padding-left:22px;margin-bottom:11px;color:var(--ink-soft);line-height:1.5;font-size:15.5px}
+  li::before{content:"";position:absolute;left:0;top:9px;width:7px;height:7px;border-radius:2px;background:var(--accent2)}
+  .tag{display:inline-block;background:var(--chip);color:var(--accent);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;margin:3px 4px 0 0}
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14.5px}
+  th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--accent);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+  td{color:var(--ink-soft);line-height:1.45}
+  td.on{color:var(--accent2);font-weight:600}
+  td.off{color:#b04a4a;font-weight:600}
+  .flow{display:flex;align-items:stretch;gap:0;margin-top:20px;flex-wrap:wrap}
+  .step{flex:1;min-width:120px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:16px;position:relative}
+  .step .n{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:.1em}
+  .step h4{font-size:15px;margin:6px 0 4px;color:var(--ink)}
+  .step p{font-size:13px}
+  .arrow{display:flex;align-items:center;color:var(--muted);font-size:22px;padding:0 8px}
+  .lead{font-size:20px;color:var(--ink-soft);line-height:1.5;max-width:62ch}
+  .big-accent{color:var(--accent)}
+  .stack{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+  .layer{border:1px solid var(--line);border-radius:10px;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+  .layer strong{color:var(--ink);font-size:16px}.layer span{font-size:13.5px;color:var(--muted)}
+  .l1{background:#eef4f6}.l2{background:#f3f0e9}.l3{background:#f2f5f8}
+  .center{justify-content:center;align-items:flex-start}
+  .title-slide{background:linear-gradient(135deg,#1c3d5a 0%,#17324a 60%,#0f2436 100%);color:#fff;border:none;aspect-ratio:16/9}
+  .title-slide .kicker{color:#9ec8d4}.title-slide .kicker::before{background:var(--gold)}
+  .title-slide h1{font-size:52px;color:#fff;max-width:20ch}
+  .title-slide .sub{color:#c7d4e0;font-size:20px}
+  .title-slide .footer{color:#8aa0b4;border-top-color:rgba(255,255,255,.15)}
+  .title-slide .num{color:#8aa0b4}
+  .badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:8px 18px;font-size:13px;color:#dbe6ef;margin-top:28px}
+  .k{font-family:'SF Mono',Consolas,monospace;background:#eef2f7;border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-size:13px;color:var(--accent)}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:8px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .split>div{padding:26px 28px}
+  .split .cloud{background:#f2f5f8}
+  .split .local{background:#f1f6f4;border-left:1px solid var(--line)}
+  .split h3{font-size:19px;margin-bottom:14px;color:var(--ink)}
+  @media print{body{background:#fff}.deck{padding:0;max-width:none}.slide{margin:0;border-radius:0;box-shadow:none;border:none;page-break-after:always;min-height:100vh}}
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <section class="slide title-slide center">
+    <span class="num">01 / 14</span>
+    <div class="kicker">Technology Briefing</div>
+    <h1>Running LLMs In-House</h1>
+    <p class="sub">Cloud vs. local models, how they run, the tooling landscape, and a path to our own agent.</p>
+    <div class="badge">Prepared for leadership review &nbsp;•&nbsp; Technical overview</div>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
+  </section>
+
+  <section class="slide">
+    <span class="num">02 / 14</span>
+    <div class="kicker">Agenda</div>
+    <h2>What this briefing covers</h2>
+    <div class="grid g2" style="margin-top:26px">
+      <div class="card"><h3>1 · The choice</h3><p>Enterprise cloud LLMs vs. locally-hosted models — trade-offs on cost, privacy, and control.</p></div>
+      <div class="card"><h3>2 · The engine</h3><p>How local models actually run: <span class="k">llama.cpp</span>, GGUF, and quantization.</p></div>
+      <div class="card"><h3>3 · The wrappers</h3><p>Ollama, LM Studio, and Unsloth — runtime and fine-tuning.</p></div>
+      <div class="card"><h3>4 · Context &amp; interaction</h3><p>RAG, files, filesystem — plus OpenClaw &amp; Hermes as agent front-ends.</p></div>
+    </div>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
+  </section>
+
+  <section class="slide">
+    <span class="num">03 / 14</span>
+    <div class="kicker">The Core Decision</div>
+    <h2>Enterprise cloud LLM vs. local LLM</h2>
+    <div class="split">
+      <div class="cloud"><h3>☁️ Cloud (OpenAI, Anthropic, Azure)</h3>
+        <ul><li>Frontier quality, zero infrastructure to manage</li><li>Pay per token — scales with usage, no capex</li><li>Data leaves our perimeter (governed by contract/DPA)</li><li>Provider controls model, pricing, deprecation</li><li>Network dependency &amp; per-call latency</li></ul></div>
+      <div class="local"><h3>🖥️ Local (self-hosted, open weights)</h3>
+        <ul><li>Data never leaves our hardware — privacy by design</li><li>Fixed cost after hardware; unlimited inference</li><li>Full control: model choice, versioning, fine-tuning</li><li>Works offline / air-gapped; no rate limits</li><li>We own ops, GPUs, and quality ceiling</li></ul></div>
+    </div>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
+  </section>
+
+  <section class="slide">
+    <span class="num">04 / 14</span>
+    <div class="kicker">Decision Matrix</div>
+    <h2>Where each option wins</h2>
+    <table>
+      <tr><th>Dimension</th><th>Enterprise Cloud</th><th>Local / Self-hosted</th></tr>
+      <tr><td>Data residency &amp; privacy</td><td class="off">Leaves perimeter</td><td class="on">Stays in-house</td></tr>
+      <tr><td>Peak model quality</td><td class="on">Frontier</td><td>Strong &amp; closing fast</td></tr>
+      <tr><td>Cost at high volume</td><td class="off">Per-token, grows</td><td class="on">Flat after hardware</td></tr>
+      <tr><td>Setup &amp; maintenance</td><td class="on">Minimal</td><td class="off">We run the ops</td></tr>
+      <tr><td>Customization / fine-tune</td><td>Limited</td><td class="on">Full control</td></tr>
+      <tr><td>Compliance / air-gap</td><td>Contractual</td><td class="on">Native</td></tr>
+    </table>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
+  </section>
+
+  <section class="slide">
+    <span class="num">05 / 14</span>
+    <div class="kicker">The Engine</div>
+    <h2>How a local LLM actually runs</h2>
+    <p class="lead">A local model is just a large file of weights. Something has to load it into memory and do the math to turn tokens into tokens — that "something" is an <span class="big-accent">inference engine</span>.</p>
+    <div class="stack">
+      <div class="layer l1"><strong>Model weights</strong><span>Billions of parameters, stored on disk</span></div>
+      <div class="layer l2"><strong>Inference engine (llama.cpp)</strong><span>Loads weights, runs the math on CPU/GPU</span></div>
+      <div class="layer l3"><strong>Wrapper (Ollama / LM Studio / …)</strong><span>Makes the engine easy to use &amp; exposes an API</span></div>
+    </div>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
+  </section>
+
+  <section class="slide">
+    <span class="num">06 / 14</span>
+    <div class="kicker">The Engine · Deep Dive</div>
+    <h2>llama.cpp — the foundation</h2>
+    <p class="sub" style="margin-top:6px">An open-source C/C++ inference engine that runs LLMs efficiently on ordinary hardware. It underpins most of the tools in this deck.</p>
+    <div class="grid g3" style="margin-top:22px">
+      <div class="card"><h3>GGUF format</h3><p>A single portable file containing the model weights + metadata. Download one file, run it anywhere.</p></div>
+      <div class="card"><h3>Quantization</h3><p>Compresses weights (e.g. 16-bit → 4-bit) so big models fit on modest GPUs/RAM, trading a little accuracy for a lot of speed &amp; savings.</p></div>
+      <div class="card"><h3>CPU + GPU offload</h3><p>Runs on plain CPUs, Apple Silicon, or NVIDIA GPUs — and can split a model across GPU and RAM when it won't fully fit.</p></div>
+    </div>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
+  </section>
+
+  <section class="slide">
+    <span class="num">07 / 14</span>
+    <div class="kicker">The Wrappers</div>
+    <h2>What is a "wrapper" — and why we need one</h2>
+    <p class="lead">Raw <span class="k">llama.cpp</span> is powerful but low-level. A wrapper sits on top to handle the parts we don't want to hand-roll:</p>
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card"><h3>📦 Model management</h3><p>Find, download, version, and switch between models with one command.</p></div>
+      <div class="card"><h3>🔌 Standard API</h3><p>Exposes an OpenAI-compatible endpoint so our apps can talk to it without custom code.</p></div>
+      <div class="card"><h3>🖥️ Interface</h3><p>A GUI or CLI for chatting, testing prompts, and tuning parameters.</p></div>
+      <div class="card"><h3>⚙️ Orchestration</h3><p>Handles memory, concurrency, and serving multiple users or apps.</p></div>
+    </div>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
+  </section>
+
+  <section class="slide">
+    <span class="num">08 / 14</span>
+    <div class="kicker">The Wrappers · Comparison</div>
+    <h2>Ollama vs. LM Studio vs. Unsloth</h2>
+    <table>
+      <tr><th>Tool</th><th>Best for</th><th>Interface</th><th>Fine-tuning</th><th>Under the hood</th></tr>
+      <tr><td><strong>Ollama</strong></td><td>Serving models to apps &amp; servers</td><td>CLI + local API</td><td class="off">No</td><td>llama.cpp</td></tr>
+      <tr><td><strong>LM Studio</strong></td><td>Desktop exploration &amp; prototyping</td><td>Polished GUI + API</td><td class="off">No</td><td>llama.cpp</td></tr>
+      <tr><td><strong>Unsloth</strong></td><td>Training/customizing &amp; fast GPU inference</td><td>Python / notebooks</td><td class="on">Yes (core strength)</td><td>PyTorch/GPU kernels</td></tr>
+    </table>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
+  </section>
+
+  <section class="slide">
+    <span class="num">09 / 14</span>
+    <div class="kicker">The Wrappers · Detail</div>
+    <h2>What each one does well</h2>
+    <div class="grid g3" style="margin-top:14px">
+      <div class="card"><h3>🦙 Ollama</h3><p>The "Docker for models." <span class="k">ollama run llama3</span> downloads and serves a model with one command, exposing a clean local API. Ideal as the <strong>backend our internal apps call</strong>.</p></div>
+      <div class="card"><h3>🎛️ LM Studio</h3><p>A friendly desktop app to browse, download, and chat with models, tune settings, and flip on a local server. Best for <strong>non-experts and rapid prototyping</strong>.</p></div>
+      <div class="card"><h3>⚡ Unsloth</h3><p>Two jobs: <strong>fine-tuning</strong> models on our own data 2–5× faster with far less GPU memory (LoRA/QLoRA), and <strong>fast GPU inference</strong> of the result.</p></div>
+    </div>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
+  </section>
+
+  <section class="slide">
+    <span class="num">10 / 14</span>
+    <div class="kicker">Making It Ours</div>
+    <h2>Two ways to specialize a model</h2>
+    <div class="split">
+      <div class="cloud"><h3>📚 Give it context (retrieval)</h3>
+        <ul><li>Model stays unchanged; we feed it the right info at query time</li><li>Fast to set up, easy to update — just change the documents</li><li>Best for facts, policies, docs that change often</li></ul></div>
+      <div class="local"><h3>🎯 Fine-tune (Unsloth)</h3>
+        <ul><li>We actually retrain the model on our data/style</li><li>Bakes in tone, formats, domain behavior permanently</li><li>Best for consistent behavior &amp; specialized tasks</li></ul></div>
+    </div>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
+  </section>
+
+  <section class="slide">
+    <span class="num">11 / 14</span>
+    <div class="kicker">Context · How</div>
+    <h2>Giving models our knowledge: RAG</h2>
+    <p class="sub" style="margin-top:4px">RAG = Retrieval-Augmented Generation. Instead of hoping the model "knows," we look up the answer in our documents and hand it to the model.</p>
+    <div class="flow">
+      <div class="step"><div class="n">STEP 1</div><h4>Index</h4><p>Our docs are chunked &amp; stored in a searchable vector database.</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">STEP 2</div><h4>Retrieve</h4><p>A question fetches the most relevant chunks.</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">STEP 3</div><h4>Augment</h4><p>Those chunks are added to the prompt as context.</p></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="n">STEP 4</div><h4>Generate</h4><p>The model answers, grounded in our real data.</p></div>
+    </div>
+    <div class="grid g3" style="margin-top:22px">
+      <div class="card"><h3>📄 File uploads</h3><p>Drop in a PDF/doc for one-off, in-conversation context.</p></div>
+      <div class="card"><h3>🗂️ Filesystem access</h3><p>Give the agent tools to read/search folders directly on our machines.</p></div>
+      <div class="card"><h3>🔎 Vector search</h3><p>The engine behind RAG for scalable, always-current knowledge.</p></div>
+    </div>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
+  </section>
+
+  <section class="slide">
+    <span class="num">12 / 14</span>
+    <div class="kicker">Interaction · Agent Front-ends</div>
+    <h2>Talking to models: OpenClaw &amp; Hermes</h2>
+    <p class="sub" style="margin-top:2px">Both are open-source (MIT) AI-assistant "harnesses" that run on our own hardware, plug into local <em>or</em> cloud models, and meet users in the chat apps they already use.</p>
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card"><h3>🦞 OpenClaw</h3><p>An assistant that runs on your own devices and connects to Discord, Slack, Teams, Telegram, WhatsApp, iMessage &amp; 20+ channels. State, memory, and credentials stay on our hardware; models &amp; agent harnesses are swappable plugins. A local <strong>Gateway</strong> is the control plane; a 501(c)(3) foundation stewards it, no paid tier or lock-in.</p></div>
+      <div class="card"><h3>☤ Hermes (Nous Research)</h3><p>A self-improving agent with a built-in <strong>learning loop</strong> — it creates &amp; refines skills from experience, searches its own past sessions, and models the user over time. Full terminal UI plus the same messaging platforms. Runs on a $5 VPS, a GPU cluster, or serverless. Use any model with <span class="k">hermes model</span> — no lock-in.</p></div>
+    </div>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
+  </section>
+
+  <section class="slide">
+    <span class="num">13 / 14</span>
+    <div class="kicker">OpenClaw vs. Hermes</div>
+    <h2>Choosing an agent harness</h2>
+    <table>
+      <tr><th></th><th>OpenClaw 🦞</th><th>Hermes ☤</th></tr>
+      <tr><td>Stewardship</td><td>OpenClaw Foundation (501c3)</td><td>Nous Research</td></tr>
+      <tr><td>Signature strength</td><td>Trusted gateway + native device apps</td><td class="on">Self-improving skills &amp; memory loop</td></tr>
+      <tr><td>Channels</td><td class="on">20+ channels, macOS/iOS/Android/Win/Linux apps</td><td>Telegram, Discord, Slack, WhatsApp, Signal, CLI</td></tr>
+      <tr><td>Deployment</td><td>Local laptop or shared team gateway</td><td class="on">VPS, GPU cluster, or serverless (idle ≈ free)</td></tr>
+      <tr><td>Extensibility</td><td>Plugins + skills (ClawHub)</td><td>Tools, skills, MCP, subagents</td></tr>
+      <tr><td>Model freedom</td><td class="on">Hosted or local, swappable</td><td class="on">Any provider or own endpoint</td></tr>
+    </table>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy</span></div>
+  </section>
+
+  <section class="slide">
+    <span class="num">14 / 14</span>
+    <div class="kicker">Building Our Own</div>
+    <h2>A wrapper &amp; agent we control</h2>
+    <p class="lead">Because these tools speak a common <strong>OpenAI-compatible API</strong>, we can build a thin layer that's entirely ours — and evolve it into a full agent.</p>
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card"><h3>🧱 Our own wrapper</h3><ul><li>Point our app at a local engine (Ollama/llama.cpp)</li><li>Add our system prompt, guardrails &amp; logging</li><li>Wire in RAG over our internal documents</li><li>Same API means we can swap models freely</li></ul></div>
+      <div class="card"><h3>🤖 Our own agent</h3><ul><li>Start from OpenClaw or Hermes (both MIT, both extensible)</li><li>Add custom tools, skills &amp; filesystem access</li><li>Fine-tune the model with Unsloth for our domain</li><li>Deploy on-prem — data never leaves the building</li></ul></div>
+    </div>
+    <div class="grid g3" style="margin-top:18px">
+      <div class="card"><h3>Recommended next step</h3><p>Pilot: Ollama + a RAG index of one department's docs, fronted by Hermes or OpenClaw, on a single GPU workstation.</p></div>
+      <div class="card"><h3>Measure</h3><p>Quality, latency, and cost-per-query vs. our current cloud spend.</p></div>
+      <div class="card"><h3>Decide</h3><p>Scale the pilot, fine-tune, and formalize an internal agent platform.</p></div>
+    </div>
+    <div class="footer"><span>Confidential — Internal</span><span>AI Strategy · Thank you</span></div>
+  </section>
+
+</div>
+</body>
+</html>
